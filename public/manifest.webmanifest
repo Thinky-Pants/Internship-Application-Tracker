@@ -1,0 +1,22 @@
+{
+  "name": "Internship Outreach Manager",
+  "short_name": "Outreach",
+  "description": "Personal internship outreach manager",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#f7f7f5",
+  "theme_color": "#2f5bd3",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    { "name": "Today", "url": "/" },
+    { "name": "Schedule & Queue", "url": "/schedule" },
+    { "name": "Inbox", "url": "/inbox" }
+  ]
+}

@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-2: #f0f0ed;
+  --border: #dedcd6;
+  --text: #1d1d1b;
+  --muted: #5f5e59;
+  --accent: #2f5bd3;
+  --accent-text: #ffffff;
+  --danger: #b42318;
+  --warn: #9a6700;
+  --ok: #1f7a3f;
+  --focus: #2f5bd3;
+  /* Outreach progress (map + badges); always paired with an icon/label */
+  --st-gray: #8a8a85;
+  --st-blue: #2f6fdb;
+  --st-yellow: #c08a00;
+  --st-purple: #7a4fd0;
+  --st-green: #1f8a4c;
+  --st-red: #c4322a;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413;
+    --surface: #1c1c1a;
+    --surface-2: #252523;
+    --border: #3a3936;
+    --text: #ecebe6;
+    --muted: #a9a79f;
+    --accent: #7ea2ff;
+    --accent-text: #0e1530;
+    --danger: #ff8a80;
+    --warn: #f2c14e;
+    --ok: #6fd39a;
+    --focus: #9db8ff;
+    --st-gray: #9a9a94;
+    --st-blue: #6f9cff;
+    --st-yellow: #e6b73a;
+    --st-purple: #b394ff;
+    --st-green: #5fcf8e;
+    --st-red: #ff7a70;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #141413;
+  --surface: #1c1c1a;
+  --surface-2: #252523;
+  --border: #3a3936;
+  --text: #ecebe6;
+  --muted: #a9a79f;
+  --accent: #7ea2ff;
+  --accent-text: #0e1530;
+  --danger: #ff8a80;
+  --warn: #f2c14e;
+  --ok: #6fd39a;
+  --focus: #9db8ff;
+  --st-gray: #9a9a94;
+  --st-blue: #6f9cff;
+  --st-yellow: #e6b73a;
+  --st-purple: #b394ff;
+  --st-green: #5fcf8e;
+  --st-red: #ff7a70;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-fg: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-text);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-ok: var(--ok);
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Cascadia Code", Consolas, ui-monospace, monospace;
+}
+
+@layer base {
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+a { color: var(--accent); }
+a:hover { text-decoration: underline; }
+
+table.data { width: 100%; border-collapse: collapse; }
+table.data th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+table.data td { padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.data tr:hover td { background: var(--surface-2); }
+
+input, select, textarea {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+input[type="checkbox"], input[type="radio"] { padding: 0; }
+label { font-size: 12px; color: var(--muted); }
+
+.skip-link { position: absolute; left: -999px; top: 8px; }
+.skip-link:focus { left: 8px; z-index: 100; background: var(--surface); padding: 6px 10px; }
+
+}
+
+.maplibregl-popup-content { background: var(--surface) !important; color: var(--text) !important; }

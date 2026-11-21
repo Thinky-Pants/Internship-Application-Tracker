@@ -1,0 +1,36 @@
+{
+  "note": "Shape example only. Real packages come from Imports & Exports -> AI exchange and contain your records' real IDs and revisions.",
+  "package": {
+    "schema": "iom.ai-exchange/v1",
+    "packageId": "00000000-0000-4000-8000-000000000001",
+    "task": "draft_email",
+    "createdAt": "2026-11-22T00:00:00.000Z",
+    "prompt": "You are helping a mechanical engineering student prepare internship outreach... Return ONLY JSON Lines...",
+    "resultSchema": {
+      "type": "object",
+      "properties": {
+        "subject": { "type": "string", "minLength": 3, "maxLength": 200 },
+        "bodyHtml": { "type": "string", "minLength": 20, "maxLength": 20000 },
+        "usedEvidenceIds": { "type": "array", "items": { "type": "string" } },
+        "unsupportedClaims": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["subject", "bodyHtml"],
+      "additionalProperties": false
+    },
+    "profile": { "name": "Your Name", "skills": ["SolidWorks"], "projects": [{ "name": "Gripper", "summary": "designed a compliant gripper" }], "availability": "June-August 2027" },
+    "cvs": [{ "documentId": "00000000-0000-4000-8000-0000000000c1", "title": "Robotics CV", "tags": ["Robotics"] }],
+    "records": [
+      {
+        "recordType": "company",
+        "recordId": "00000000-0000-4000-8000-0000000000aa",
+        "recordRevision": 3,
+        "data": { "name": "Example Robotics", "domain": "example-robotics.com", "industry": "Robotics and automation", "country": "Germany", "city": "Munich" },
+        "contacts": [{ "id": "00000000-0000-4000-8000-0000000000bb", "name": "Alex Example", "title": "CTO" }],
+        "evidence": [{ "id": "00000000-0000-4000-8000-0000000000ee", "url": "https://example-robotics.com/about", "summary": "Builds compliant grippers for food handling.", "accessedDate": "2026-11-20" }]
+      }
+    ]
+  },
+  "resultLines": [
+    { "packageId": "00000000-0000-4000-8000-000000000001", "recordType": "company", "recordId": "00000000-0000-4000-8000-0000000000aa", "recordRevision": 3, "result": { "subject": "Summer 2027 mechanical engineering internship - Example Robotics", "bodyHtml": "<p>Dear Alex,</p><p>I read that Example Robotics builds compliant grippers for food handling...</p>", "usedEvidenceIds": ["00000000-0000-4000-8000-0000000000ee"], "unsupportedClaims": [] } }
+  ]
+}

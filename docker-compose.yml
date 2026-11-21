@@ -1,0 +1,54 @@
+# Local stack: PostgreSQL + one-shot migrations + web + worker.
+# Background work (scheduled sends, sync) happens only while `worker` is running.
+# Usage (PowerShell):  docker compose up -d --build
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: outreach
+      POSTGRES_PASSWORD: outreach
+      POSTGRES_DB: outreach
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U outreach -d outreach"]
+      interval: 5s
+      retries: 20
+
+  migrate:
+    build: .
+    command: ["npm", "run", "db:migrate"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://outreach:outreach@db:5432/outreach
+    depends_on:
+      db: { condition: service_healthy }
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://outreach:outreach@db:5432/outreach
+      STORAGE_DIR: /app/data/files
+    ports: ["127.0.0.1:3000:3000"]
+    volumes: [files:/app/data]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: .
+    restart: unless-stopped
+    command: ["npm", "run", "worker"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://outreach:outreach@db:5432/outreach
+      STORAGE_DIR: /app/data/files
+    volumes: [files:/app/data]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+volumes:
+  pgdata:
+  files:

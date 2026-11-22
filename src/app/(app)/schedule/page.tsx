@@ -81,7 +81,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           <form action={createCampaignAction} className="mt-1 flex gap-1"><input type="hidden" name="back" value="/schedule" /><input name="name" placeholder="New campaign" aria-label="New campaign name" required /><Button type="submit">Add</Button></form>
         </Section>
         <Section title="Cancellation cutoff">
-          <p className="text-[12px]">Before a worker’s atomic claim, cancel is guaranteed. After the claim and before the provider send request, a cancel request is honoured. Once the request to Outlook is underway, cancellation is best effort — Outlook has no reliable recall and this app does not claim one.</p>
+          <p className="text-[12px]">Before a worker’s atomic claim, cancel is guaranteed. After the claim and before the provider send request, a cancel request is honoured. Once the send request to Gmail/Outlook is underway, cancellation is best effort — email cannot be reliably recalled and this app does not claim it.</p>
         </Section>
       </div>
 

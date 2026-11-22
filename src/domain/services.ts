@@ -19,6 +19,6 @@ export interface Services {
   apollo(ownerId: string): Promise<ApolloProvider | null>;
   ai(ownerId: string, provider?: string): Promise<AiProvider | null>;
   workerId: string;
-  /** Refresh delegated tokens (Graph). Injected so tests can stub it. */
-  refreshGraphToken?: (refreshToken: string) => Promise<{ accessToken: string; refreshToken: string | null; expiresAt: Date }>;
+  /** Refresh delegated OAuth tokens for a mailbox provider ("graph" | "gmail"). Injected so tests can stub it. */
+  refreshOAuthToken?: (provider: string, refreshToken: string) => Promise<{ accessToken: string; refreshToken: string | null; expiresAt: Date }>;
 }

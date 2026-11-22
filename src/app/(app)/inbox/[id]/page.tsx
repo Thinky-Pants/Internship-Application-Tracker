@@ -55,8 +55,8 @@ export default async function ConversationPage({ params, searchParams }: { param
                 {m.isBounce && <Badge tone="danger">bounce</Badge>}
                 {m.isAutomated && !m.isBounce && <Badge>automated</Badge>}
                 {m.category && <Badge tone="info" title={`${m.categorySource}${m.categoryConfidence ? ` ${Math.round(m.categoryConfidence * 100)}%` : ""}`}>{CATEGORY_LABEL[m.category as keyof typeof CATEGORY_LABEL] ?? m.category} ({m.categorySource})</Badge>}
-                {m.webLink && <a href={m.webLink} target="_blank" rel="noopener noreferrer">Open in Outlook</a>}
-                {m.hasAttachments && <Badge>attachments in Outlook</Badge>}
+                {m.webLink && <a href={m.webLink} target="_blank" rel="noopener noreferrer">Open in mailbox</a>}
+                {m.hasAttachments && <Badge>attachments in mailbox</Badge>}
               </header>
               <div className="mb-1 text-[13px] font-semibold">{m.subject}</div>
               <pre className="whitespace-pre-wrap font-sans text-[13px]">{(m.bodyText ?? "").slice(0, 8000)}</pre>

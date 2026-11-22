@@ -108,22 +108,29 @@ export class MailProviderError extends Error {
   }
 }
 
+/** Thread of the draft and the earliest instant its sent copy could have been created. */
+export interface SendHint {
+  conversationId?: string | null;
+  since?: Date | null;
+}
+
 export interface MailContext {
   mailboxId: string;
   accessToken: string;
 }
 
 export interface MailProvider {
-  readonly kind: "graph" | "mock";
+  readonly kind: "graph" | "gmail" | "mock";
   getIdentity(ctx: MailContext): Promise<MailboxIdentity>;
   listFolders(ctx: MailContext): Promise<MailFolder[]>;
   createDraft(ctx: MailContext, input: DraftInput): Promise<DraftRef>;
-  getDraftState(ctx: MailContext, draftId: string): Promise<ProviderDraftState>;
+  /** `hint` lets providers whose drafts disappear on send (Gmail) recognise an already-sent draft via its thread. */
+  getDraftState(ctx: MailContext, draftId: string, hint?: SendHint): Promise<ProviderDraftState>;
   deleteDraft(ctx: MailContext, draftId: string): Promise<void>;
   /** Submits an existing draft. Resolves on acceptance (e.g. HTTP 202) — NOT proof of delivery. */
   sendDraft(ctx: MailContext, draftId: string): Promise<{ requestId: string | null }>;
   /** Locate the sent copy of a submitted draft, if it exists yet. */
-  findSentCopy(ctx: MailContext, ref: { draftId: string; internetMessageId: string | null }): Promise<SentCopy | null>;
+  findSentCopy(ctx: MailContext, ref: { draftId: string; internetMessageId: string | null } & SendHint): Promise<SentCopy | null>;
   /** One page of per-folder delta. Pass a nextLink/deltaLink, or null for initial sync. */
   deltaPage(ctx: MailContext, folderId: string, link: string | null, opts: { initialSince: Date }): Promise<DeltaPage>;
 }

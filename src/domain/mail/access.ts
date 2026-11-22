@@ -33,12 +33,12 @@ export async function getMailAccess(svc: Services, mailboxId: string): Promise<{
   if (mb.accessTokenEnc && mb.tokenExpiresAt && mb.tokenExpiresAt > new Date(now.getTime() + 60_000)) {
     return { mailbox: mb, provider, ctx: { mailboxId: mb.id, accessToken: decryptSecret(mb.accessTokenEnc) } };
   }
-  if (!mb.refreshTokenEnc || !svc.refreshGraphToken) {
+  if (!mb.refreshTokenEnc || !svc.refreshOAuthToken) {
     await markMailbox(svc, mb.id, "expired", "No refresh token available; reconnect the mailbox.");
     throw new MailboxUnavailable("expired", "No refresh token available; reconnect the mailbox.");
   }
   try {
-    const t = await svc.refreshGraphToken(decryptSecret(mb.refreshTokenEnc));
+    const t = await svc.refreshOAuthToken(mb.provider, decryptSecret(mb.refreshTokenEnc));
     await svc.db.update(s.mailboxes).set({
       accessTokenEnc: encryptSecret(t.accessToken),
       refreshTokenEnc: t.refreshToken ? encryptSecret(t.refreshToken) : mb.refreshTokenEnc,
@@ -49,7 +49,7 @@ export async function getMailAccess(svc: Services, mailboxId: string): Promise<{
   } catch (e) {
     if (e instanceof GraphAuthError && e.kind === "transient") throw new MailboxUnavailable("connected", "Token endpoint temporarily unavailable.");
     const restricted = e instanceof GraphAuthError && e.kind === "consent_required";
-    const reason = restricted ? "Your organisation requires admin approval for this app. Ask your IT admin, or connect a personal mailbox." : `Sign-in expired: ${errorSummary(e)}`;
+    const reason = restricted ? "The account requires approval for this app (organisation policy or missing consent). Connect a personal mailbox, or ask the account administrator." : `Sign-in expired or was revoked: reconnect the mailbox (${errorSummary(e)}).`;
     await markMailbox(svc, mb.id, restricted ? "restricted" : "expired", reason);
     throw new MailboxUnavailable(restricted ? "restricted" : "expired", reason);
   }
@@ -63,11 +63,11 @@ export async function markMailbox(svc: Services, mailboxId: string, status: stri
 export async function handleAuthError(svc: Services, mailboxId: string, err: unknown): Promise<boolean> {
   if (!(err instanceof MailProviderError)) return false;
   if (err.kind === "auth_expired") {
-    await markMailbox(svc, mailboxId, "expired", "Microsoft rejected the access token (expired or revoked). Reconnect the mailbox.");
+    await markMailbox(svc, mailboxId, "expired", "The mail provider rejected the access token (expired or revoked). Reconnect the mailbox.");
     return true;
   }
   if (err.kind === "consent_required") {
-    await markMailbox(svc, mailboxId, "restricted", "Permission denied by the tenant (consent/admin approval required).");
+    await markMailbox(svc, mailboxId, "restricted", "Permission denied by the mail provider (consent missing, revoked, or blocked by policy). Reconnect and grant the requested permissions.");
     return true;
   }
   return false;

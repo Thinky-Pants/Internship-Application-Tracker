@@ -79,6 +79,8 @@ export async function scheduleMessage(svc: Services, req: ScheduleRequest) {
       mode: req.mode,
       dstResolution: req.dstResolution ?? "none",
       isDemo: ca.message.isDemo,
+      // App clock, not the DB clock: eligibility compares this with provider timestamps (and simulated demo time).
+      createdAt: svc.clock.now(),
     }).returning();
     await tx.update(s.messages).set({ status: "scheduled", updatedAt: svc.clock.now() }).where(eq(s.messages.id, req.messageId));
     await logTransition(tx, { ownerId: req.ownerId, scheduledSendId: sd.id, messageId: req.messageId, from: null, to: "scheduled", actor: req.actor ?? "user", reason: windowNote ?? `planned ${req.mode} ${req.localIntent} ${req.zone}`, at: svc.clock.now() });
@@ -206,7 +208,7 @@ export async function commitBatch(svc: Services, ownerId: string, preview: Batch
       if (!ca) throw new ComposeError("Approval changed since preview; re-run the preview.");
       const [sd] = await tx.insert(s.scheduledSends).values({
         ownerId, messageId: it.messageId, revisionId: ca.revision.id, approvalId: ca.approval.id, mailboxId: ca.revision.mailboxId!, campaignId: ca.message.campaignId,
-        state: "scheduled", plannedAt: it.plannedUtc!, intentLocal: it.localIntent!, intentZone: it.zone!, mode, dstResolution: "none", isDemo: ca.message.isDemo,
+        state: "scheduled", plannedAt: it.plannedUtc!, intentLocal: it.localIntent!, intentZone: it.zone!, mode, dstResolution: "none", isDemo: ca.message.isDemo, createdAt: svc.clock.now(),
       }).returning();
       await tx.update(s.messages).set({ status: "scheduled" }).where(eq(s.messages.id, it.messageId));
       await logTransition(tx, { ownerId, scheduledSendId: sd.id, messageId: it.messageId, from: null, to: "scheduled", actor: "user", reason: `batch: ${it.localIntent} ${it.zone}${it.shiftedMinutes ? ` (+${it.shiftedMinutes} min: ${it.reasons.join(", ")})` : ""}`, at: svc.clock.now() });

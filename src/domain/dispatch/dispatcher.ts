@@ -185,7 +185,7 @@ export async function dispatchOne(svc: Services, sdIn: Send): Promise<Outcome> {
   try {
     let draftId = msg.providerDraftId && msg.providerDraftRevisionId === rev.id ? msg.providerDraftId : null;
     if (draftId) {
-      const state = await access.provider.getDraftState(access.ctx, draftId);
+      const state = await access.provider.getDraftState(access.ctx, draftId, { conversationId: msg.providerConversationId, since: sd.createdAt });
       if (state.exists && !state.isDraft) {
         // Already sent (e.g. crash after the send request): reconcile, never resend.
         await transition(svc, sd, "submitted", { ...releaseLease, phase: "done", submittedAt: now }, "provider draft is no longer a draft — treating as submitted and reconciling", { requireLease: true });
@@ -376,7 +376,7 @@ export async function reconcileSend(svc: Services, sendId: string): Promise<stri
     await transition(svc, sd, sd.state, { resolutionRequired: true, lastError: "No provider draft recorded; cannot reconcile automatically." }, "needs manual resolution");
     return "resolution_required";
   }
-  const copy = await access.provider.findSentCopy(access.ctx, { draftId: msg.providerDraftId, internetMessageId: msg.internetMessageId });
+  const copy = await access.provider.findSentCopy(access.ctx, { draftId: msg.providerDraftId, internetMessageId: msg.internetMessageId, conversationId: msg.providerConversationId, since: sd.createdAt });
   if (copy) {
     await transition(svc, sd, "recorded_sent", { recordedSentAt: copy.sentAt, resolutionRequired: false, lastError: null }, `sent copy found in Sent Items (${copy.sentAt.toISOString()})`, { messageStatus: "recorded_sent" });
     await svc.db.update(s.messages).set({ recordedSentAt: copy.sentAt, providerMessageId: copy.providerMessageId, internetMessageId: copy.internetMessageId ?? msg.internetMessageId, providerConversationId: copy.conversationId ?? msg.providerConversationId, webLink: copy.webLink, evidenceSource: "provider_sync" }).where(eq(s.messages.id, msg.id));
@@ -390,7 +390,7 @@ export async function reconcileSend(svc: Services, sendId: string): Promise<stri
     return "uncertain";
   }
   if (sd.state === "uncertain" && attempts >= MAX_RECONCILE_ATTEMPTS) {
-    const draft = await access.provider.getDraftState(access.ctx, msg.providerDraftId);
+    const draft = await access.provider.getDraftState(access.ctx, msg.providerDraftId, { conversationId: msg.providerConversationId, since: sd.createdAt });
     const note = draft.exists && draft.isDraft ? "The draft is still in Drafts, so it was probably not sent — but this cannot be proven." : "No draft and no sent copy were found.";
     await svc.db.update(s.scheduledSends).set({ reconcileAttempts: attempts, resolutionRequired: true, lastError: `Outcome unresolved. ${note} Choose: mark as sent, retry (same draft), or cancel.` }).where(eq(s.scheduledSends.id, sd.id));
     return "resolution_required";

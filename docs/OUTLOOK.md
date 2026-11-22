@@ -2,6 +2,8 @@
 
 The app uses **delegated** permissions: you sign in to the mailbox and the app acts as you. It never asks for your mailbox password.
 
+> **Gmail is the simpler option for a personal account** (docs/GMAIL.md). Microsoft now requires a Microsoft Entra directory to register an app — for a personal Outlook.com account that means signing up for an Azure free account first (phone and card verification).
+
 ## 1. Register the application (Microsoft Entra ID)
 
 1. Go to https://entra.microsoft.com → **Applications → App registrations → New registration**.

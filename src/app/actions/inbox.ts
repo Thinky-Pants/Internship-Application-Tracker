@@ -59,7 +59,7 @@ export async function replyDraftAction(fd: FormData) {
   } catch (e) {
     back(`/inbox/${conv}`, { err: errMessage(e) });
   }
-  back(`/drafts/${id}`, { msg: "Reply draft created. It will be sent in the same Outlook thread (createReply), after your approval." });
+  back(`/drafts/${id}`, { msg: "Reply draft created. It will be sent in the same email thread after your approval." });
 }
 
 export async function aiSummaryAction(fd: FormData) {

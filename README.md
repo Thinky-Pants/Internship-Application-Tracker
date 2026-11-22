@@ -1,8 +1,8 @@
 # Internship Outreach Manager
 
-A private, single-owner web app (installable on Windows as a PWA) for running an international internship outreach campaign: import your company workbook, find contacts and email addresses, draft and approve exact messages, schedule them in the recipient's or your own timezone, send through Outlook (Microsoft Graph) from a persistent worker, and track replies, follow-ups and next actions.
+A private, single-owner web app (installable on Windows as a PWA) for running an international internship outreach campaign: import your company workbook, find contacts and email addresses, draft and approve exact messages, schedule them in the recipient's or your own timezone, send through **Gmail** (Gmail API) or **Outlook** (Microsoft Graph) from a persistent worker, and track replies, follow-ups and next actions.
 
-**Stack:** TypeScript · Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · PostgreSQL + Drizzle ORM · a dedicated worker process with a PostgreSQL-backed durable queue · MapLibre GL · Microsoft Graph · Apollo REST + CSV · optional Anthropic/OpenAI · Vitest.
+**Stack:** TypeScript · Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · PostgreSQL + Drizzle ORM · a dedicated worker process with a PostgreSQL-backed durable queue · MapLibre GL · Gmail API / Microsoft Graph · Apollo REST + CSV · optional Anthropic/OpenAI · Vitest + Playwright.
 
 > **Background work only happens while the worker runs.** On your PC that means while `npm run worker` (or the Docker `worker` service) is running. To keep scheduled sends and sync going with your PC off, deploy web + worker + PostgreSQL to a host that keeps both processes running — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
@@ -97,7 +97,8 @@ Open the app in Microsoft Edge (or Chrome) → **⋯ → Apps → Install this s
 - [docs/DISPATCH.md](docs/DISPATCH.md) — dispatch state machine, cancellation cutoff, recovery, uncertain sends
 - [docs/SCHEDULING.md](docs/SCHEDULING.md) — timezone, DST, sending windows, batch spreading, overdue policy
 - [docs/SYNC.md](docs/SYNC.md) — Outlook sync coverage, threading, reply handling, follow-up pausing
-- [docs/OUTLOOK.md](docs/OUTLOOK.md) — Microsoft app registration, permissions, consent, webhooks, polling
+- [docs/GMAIL.md](docs/GMAIL.md) — Gmail: Google Cloud project, Personal OAuth app, connect
+- [docs/OUTLOOK.md](docs/OUTLOOK.md) — Outlook (alternative): Microsoft app registration, permissions, consent, webhooks, polling
 - [docs/APOLLO.md](docs/APOLLO.md) — Apollo eligibility, API key, CSV import
 - [docs/AI.md](docs/AI.md) — optional AI providers and the manual AI exchange format
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — cloud topology, worker uptime, storage, HTTPS, backups, costs

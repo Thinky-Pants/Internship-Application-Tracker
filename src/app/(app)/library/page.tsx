@@ -39,7 +39,7 @@ async function Cvs({ ownerId, zone }: { ownerId: string; zone: string }) {
     <div className="grid gap-3 lg:grid-cols-3">
       <Section title="Upload a CV (PDF)">
         <form action={uploadCvAction} className="flex flex-col gap-2" encType="multipart/form-data">
-          <Field label="PDF file (≤10 MB; Outlook attachments ≤3 MB)" htmlFor="cv-f"><input id="cv-f" name="file" type="file" accept="application/pdf" required /></Field>
+          <Field label="PDF file (≤10 MB; email attachments ≤3 MB)" htmlFor="cv-f"><input id="cv-f" name="file" type="file" accept="application/pdf" required /></Field>
           <Field label="Add as new version of" htmlFor="cv-d"><select id="cv-d" name="documentId"><option value="">A new CV</option>{docs.map((d) => <option key={d.id} value={d.id}>{d.title}</option>)}</select></Field>
           <Field label="Title (new CV)" htmlFor="cv-t"><input id="cv-t" name="title" placeholder="Robotics & automation CV" /></Field>
           <Field label="Industry tags (comma-separated)" htmlFor="cv-g"><input id="cv-g" name="tags" placeholder="Robotics, Automotive" /></Field>

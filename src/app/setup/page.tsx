@@ -14,7 +14,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
       <h1 className="mb-1 text-lg font-semibold">Set up owner access</h1>
       <p className="mb-4 text-[13px] text-muted">
         This is a private, single-owner app. Create the owner account first; next you will set your timezone, import your workbook and
-        (optionally) connect Outlook, Apollo and AI. Every optional step can be skipped.
+        (optionally) connect Gmail or Outlook, Apollo and AI. Every optional step can be skipped.
       </p>
       <Flash sp={sp} />
       <form action={setupOwnerAction} className="flex flex-col gap-3">

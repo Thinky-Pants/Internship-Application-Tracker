@@ -5,7 +5,8 @@ import { requireOwner } from "@/server/auth";
 import { getServices, isDemoMode } from "@/server/runtime";
 import { back, errMessage } from "@/server/flash";
 import * as s from "@/db/schema";
-import { encryptSecret, encryptionConfigured } from "@/lib/crypto";
+import { decryptSecret, encryptSecret, encryptionConfigured } from "@/lib/crypto";
+import { revokeGoogleToken } from "@/providers/mail/google-auth";
 import { isValidZone } from "@/domain/scheduling/time";
 import { logTransition } from "@/domain/dispatch/states";
 import { ensureFolders } from "@/domain/mail/sync";
@@ -91,6 +92,14 @@ export async function disconnectMailboxAction(fd: FormData) {
       /* tokens may already be invalid */
     }
   }
+  // Gmail: revoke the refresh token at Google so the grant is fully removed.
+  if (mb!.provider === "gmail" && mb!.refreshTokenEnc) {
+    try {
+      await revokeGoogleToken(decryptSecret(mb!.refreshTokenEnc));
+    } catch {
+      /* best effort */
+    }
+  }
   const sends = await svc.db.select().from(s.scheduledSends).where(and(eq(s.scheduledSends.mailboxId, id), inArray(s.scheduledSends.state, ["scheduled", "paused"])));
   for (const sd of sends) {
     const [u] = await svc.db.update(s.scheduledSends).set({ state: "held", holdReason: "Mailbox disconnected — reconnect to resume", version: sd.version + 1 }).where(and(eq(s.scheduledSends.id, sd.id), eq(s.scheduledSends.version, sd.version))).returning();
@@ -99,7 +108,8 @@ export async function disconnectMailboxAction(fd: FormData) {
   await svc.db.update(s.mailboxes).set({ status: "disconnected", statusReason: "Disconnected by owner. Tokens removed; history retained.", accessTokenEnc: null, refreshTokenEnc: null, tokenExpiresAt: null }).where(eq(s.mailboxes.id, id));
   await svc.db.update(s.mailboxSubscriptions).set({ status: "removed" }).where(eq(s.mailboxSubscriptions.mailboxId, id));
   await audit(svc.db, { ownerId: o.id, entityType: "mailbox", entityId: id, action: "disconnect", after: { heldSends: sends.length } });
-  back("/settings#mailboxes", { msg: `Disconnected. ${sends.length} pending send(s) are held (not deleted). Stored tokens were removed; to fully revoke the app's access also remove it at https://account.live.com/consent/Manage or https://myapplications.microsoft.com.` });
+  const revokeHint = mb!.provider === "gmail" ? "Access was revoked at Google (you can confirm at myaccount.google.com/permissions)." : "To fully revoke the app's access also remove it at https://account.live.com/consent/Manage or https://myapplications.microsoft.com.";
+  back("/settings#mailboxes", { msg: `Disconnected. ${sends.length} pending send(s) are held (not deleted). Stored tokens were removed. ${revokeHint}` });
 }
 
 export async function addMockMailboxAction() {
@@ -107,7 +117,7 @@ export async function addMockMailboxAction() {
   if (!isDemoMode() && process.env.NODE_ENV === "production" && process.env.ALLOW_MOCK_MAILBOX !== "1") back("/settings", { err: "Mock mailboxes are only available in demo or development mode." });
   const [mb] = await getServices().db.insert(s.mailboxes).values({ ownerId: o.id, provider: "mock", emailAddress: "demo.student@example.test", displayName: "Mock mailbox (never sends)", status: "connected", connectedAt: new Date(), isDemo: true, minSpacingSeconds: 60 }).returning();
   await ensureFolders(getServices(), mb.id);
-  back("/settings#mailboxes", { msg: "Mock mailbox added. It simulates Outlook and never sends real mail." });
+  back("/settings#mailboxes", { msg: "Mock mailbox added. It simulates a real mailbox and never sends real mail." });
 }
 
 export async function reconnectMockAction(fd: FormData) {

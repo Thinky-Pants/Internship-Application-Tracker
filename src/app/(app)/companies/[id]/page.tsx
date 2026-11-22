@@ -59,7 +59,7 @@ export default async function CompanyPage({ params, searchParams }: { params: Pr
   const primaryLoc = locations.find((l) => l.isPrimary) ?? locations[0];
   const tzSug = suggestTimezone(c.country, c.city);
   const timeline = [
-    ...msgs.map((m) => ({ at: m.receivedAt ?? m.recordedSentAt ?? m.submittedAt ?? m.createdAt, text: `${m.direction === "inbound" ? "Received" : m.kind === "external_sent" ? "Sent from Outlook" : `Outbound (${m.status.replace(/_/g, " ")})`}: ${m.subject ?? ""}`, href: m.direction === "inbound" && m.conversationId ? `/inbox/${m.conversationId}` : `/drafts/${m.id}` })),
+    ...msgs.map((m) => ({ at: m.receivedAt ?? m.recordedSentAt ?? m.submittedAt ?? m.createdAt, text: `${m.direction === "inbound" ? "Received" : m.kind === "external_sent" ? "Sent from your mailbox directly" : `Outbound (${m.status.replace(/_/g, " ")})`}: ${m.subject ?? ""}`, href: m.direction === "inbound" && m.conversationId ? `/inbox/${m.conversationId}` : `/drafts/${m.id}` })),
     ...attempts.map((a) => ({ at: a.attemptedAt ?? a.createdAt, text: `Discovery ${a.kind} via ${a.provider}: ${a.status}${a.outcome ? ` / ${a.outcome.replace(/_/g, " ")}` : ""}`, href: undefined })),
     ...qevents.map((q) => ({ at: q.at, text: `Send ${q.fromState ?? "new"} → ${q.toState}${q.reason ? `: ${q.reason}` : ""}`, href: undefined })),
     ...audits.map((a) => ({ at: a.at, text: `${a.action.replace(/_/g, " ")} by ${a.actor}`, href: undefined })),

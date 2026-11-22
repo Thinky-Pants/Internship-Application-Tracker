@@ -5,6 +5,7 @@ import { getDb } from "@/db/client";
 import * as s from "@/db/schema";
 import { encryptionConfigured } from "@/lib/crypto";
 import { graphAuthConfig, GRAPH_SCOPES } from "@/providers/mail/graph-auth";
+import { googleAuthConfig } from "@/providers/mail/google-auth";
 import { geocoderConfig } from "@/domain/geo/geocode";
 import { webhooksEnabled } from "@/domain/mail/subscriptions";
 import { DEFAULT_ROLE_HEURISTICS } from "@/domain/discovery/service";
@@ -34,13 +35,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const cred = (p: string) => creds.find((c) => c.provider === p);
   const win = st.sendingWindow as { days: number[]; start: string; end: string };
   const msCfg = graphAuthConfig();
+  const gCfg = googleAuthConfig();
   const geo = geocoderConfig();
   const map = mapStyle(st);
   return (
     <>
       <PageHeader title="Settings & Integrations" subtitle="Optional connections can be skipped; the app works with CSV/manual workflows and mock providers." />
       <Flash sp={sp} />
-      {sp.setup && <div className="mb-3"><Notice title="First-run setup">1) Set your display timezone and sending window below. 2) <Link href="/imports">Import your workbook</Link>. 3) Map/geocoding (optional). 4) Apollo / AI keys (optional). 5) Connect Outlook (or add a mock mailbox for practice). 6) <Link href="/library">Upload CVs</Link> and fill in your verified profile.</Notice></div>}
+      {sp.setup && <div className="mb-3"><Notice title="First-run setup">1) Set your display timezone and sending window below. 2) <Link href="/imports">Import your workbook</Link>. 3) Map/geocoding (optional). 4) Apollo / AI keys (optional). 5) Connect Gmail or Outlook (or add a mock mailbox for practice). 6) <Link href="/library">Upload CVs</Link> and fill in your verified profile.</Notice></div>}
       {!encryptionConfigured() && <div className="mb-3"><Notice tone="danger" title="APP_ENCRYPTION_KEY is not set">Provider keys and mailbox tokens cannot be stored until you set a 32-byte base64 key in the environment (see .env.example).</Notice></div>}
 
       <div className="grid gap-3 lg:grid-cols-2">
@@ -60,9 +62,19 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <form action={setThemeAction} className="mt-3 flex items-center gap-2"><input type="hidden" name="back" value="/settings" /><label htmlFor="theme">Theme</label><select id="theme" name="theme" defaultValue=""><option value="">System</option><option value="light">Light</option><option value="dark">Dark</option></select><Button type="submit">Apply</Button></form>
         </Section>
 
-        <Section title={<span id="mailboxes">Outlook mailboxes</span>}>
-          <p className="mb-2 text-[12px] text-muted">Delegated Microsoft Graph sign-in; scopes requested: <code>{GRAPH_SCOPES.join(" ")}</code>. This app never asks for your mailbox password. A university/work tenant may block consent; the app shows that as “restricted” and keeps your schedules. Sync mode: {webhooksEnabled() ? "webhooks (cloud) + safety polling" : "polling (local/no public HTTPS URL)"}.</p>
-          {msCfg ? <LinkButton variant="primary" href="/api/oauth/microsoft/start">Connect Outlook account</LinkButton> : <Notice tone="warn" title="Microsoft app registration not configured">Set MS_CLIENT_ID, MS_CLIENT_SECRET and MS_REDIRECT_URI (see docs/OUTLOOK.md). Until then you can practise with a mock mailbox.</Notice>}
+        <Section title={<span id="mailboxes">Mailboxes (Gmail or Outlook)</span>}>
+          <p className="mb-2 text-[12px] text-muted">You sign in with Google or Microsoft; this app never asks for your mailbox password. Sync mode: {webhooksEnabled() ? "webhooks (Outlook, cloud) + safety polling" : "polling every few minutes"}.</p>
+          <div className="flex flex-col gap-2">
+            <div>
+              <p className="text-[13px] font-medium">Gmail</p>
+              {gCfg ? <LinkButton variant="primary" href="/api/oauth/google/start">Connect Gmail account</LinkButton> : <Notice tone="warn" title="Google OAuth client not configured">Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI (see docs/GMAIL.md).</Notice>}
+              <p className="mt-1 text-[11px] text-muted">Permissions: read Gmail (to detect replies and confirm sends) and manage drafts / send. Nothing is sent without your approval.</p>
+            </div>
+            <div>
+              <p className="text-[13px] font-medium">Outlook</p>
+              {msCfg ? <LinkButton href="/api/oauth/microsoft/start">Connect Outlook account</LinkButton> : <p className="text-[12px] text-muted">Not configured (optional; see docs/OUTLOOK.md). Scopes: <code>{GRAPH_SCOPES.join(" ")}</code>.</p>}
+            </div>
+          </div>
           {(isDemoMode() || process.env.NODE_ENV !== "production") && <form action={addMockMailboxAction} className="mt-2"><Button type="submit">Add mock mailbox (never sends)</Button></form>}
           {mailboxes.map((m) => (
             <div key={m.id} className="mt-3 rounded-md border border-line p-2 text-[13px]">
@@ -88,6 +100,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 {m.status !== "disconnected" && <form action={disconnectMailboxAction}><input type="hidden" name="mailboxId" value={m.id} /><Button variant="danger" type="submit">Disconnect</Button></form>}
                 {m.provider === "mock" && m.status !== "connected" && <form action={reconnectMockAction}><input type="hidden" name="mailboxId" value={m.id} /><Button type="submit">Reconnect mock</Button></form>}
                 {m.provider === "graph" && m.status !== "connected" && msCfg && <LinkButton href="/api/oauth/microsoft/start">Reconnect</LinkButton>}
+                {m.provider === "gmail" && m.status !== "connected" && gCfg && <LinkButton href="/api/oauth/google/start">Reconnect Gmail</LinkButton>}
               </div>
             </div>
           ))}

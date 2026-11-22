@@ -43,7 +43,7 @@ export async function createDraftAction(fd: FormData) {
   let note = "";
   try {
     const mailboxId = str(fd, "mailboxId");
-    if (!mailboxId) throw new Error("Add a mailbox first (Settings → Outlook, or use the demo mailbox).");
+    if (!mailboxId) throw new Error("Add a mailbox first (Settings → Connect Gmail or Outlook, or use the demo mailbox).");
     const r = await draftFromTemplate(o.id, { companyId: String(fd.get("companyId")), contactId: str(fd, "contactId"), templateId: str(fd, "templateId"), mailboxId, cvVersionId: str(fd, "cvVersionId"), personalization: str(fd, "personalization"), campaignId: str(fd, "campaignId") });
     id = r.message.id;
     const sequenceId = str(fd, "sequenceId");

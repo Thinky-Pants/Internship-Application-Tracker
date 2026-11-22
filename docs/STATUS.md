@@ -43,9 +43,15 @@ The browser suite caught a production bug the unit tests could not (their fake c
 
 Also tested: backup → restore round trip into an empty database (`tests/demo.test.ts`), import rollback with dependencies.
 
+## Gmail adapter
+
+✅ 7 tests (`tests/gmail.test.ts`) run the real dispatcher, reconciliation and sync against a fake Gmail API that follows Google's documented behaviour: draft-first send with the exact CV, sent copy found via the thread (new message ID), no duplicate on sync, reply matched by In-Reply-To and the app's reply threaded, network drop after send → uncertain → reconciled without resend, draft edited in Gmail → held, history paging and expired history (404) → resync without duplicates, revoked token → mailbox expired and send held. 🔌 Not yet run against a real Gmail account.
+
 ## External setup required for live use
 
-- 🔌 **Outlook**: Entra app registration, client secret, redirect URI, consent (docs/OUTLOOK.md). The Graph adapter has not been run against a live mailbox in this build — use docs/LIVE-TEST-CHECKLIST.md with an address you own.
+- 🔌 **Gmail**: Google Cloud project with the Gmail API enabled, OAuth consent screen (Personal user type), Web OAuth client with the localhost redirect URI (docs/GMAIL.md).
+
+- 🔌 **Outlook (alternative)**: Microsoft now requires an Entra directory (e.g. via an Azure free account) to register an app; then app registration, client secret, redirect URI, consent (docs/OUTLOOK.md). The Graph adapter has not been run against a live mailbox in this build — use docs/LIVE-TEST-CHECKLIST.md with an address you own.
 - 🔌 **Apollo**: API key with People Search/Enrichment in scope (master key may be required). Not run live.
 - 🔌 **Anthropic/OpenAI**: API keys and (for OpenAI) a model ID. Not run live.
 - 🔌 **Geocoder**: `GEOCODER=nominatim` (own instance or within the public usage policy) for city-level pins; otherwise approximate country pins.

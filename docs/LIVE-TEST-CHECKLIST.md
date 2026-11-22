@@ -2,7 +2,17 @@
 
 Run only with addresses **you own** (e.g. a second personal mailbox). Never use real campaign contacts for testing. Use real PostgreSQL, `DEMO_MODE=0`.
 
-## Outlook
+## Gmail
+
+- [ ] Google Cloud project, Gmail API enabled, Personal OAuth app, Web client (docs/GMAIL.md); `.env` has `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`; containers recreated.
+- [ ] Settings → Connect Gmail account → **connected**, correct address, Inbox/Sent/labels discovered.
+- [ ] Create a company + contact using a second address you own; draft → approve → schedule 3 minutes ahead (worker running).
+- [ ] Queue: *dispatching* → *submitted* → **recorded sent**; Gmail Sent shows the message with the CV attached; your test inbox receives it.
+- [ ] Reply from the test address → after sync (≤5 min or Sync now) the reply appears in the same conversation; pending follow-ups paused.
+- [ ] Reply in thread from the app → arrives in the same Gmail thread.
+- [ ] Disconnect → pending sends held; access gone from myaccount.google.com/permissions; reconnect → resume.
+
+## Outlook (alternative)
 
 - [ ] App registered (docs/OUTLOOK.md); `.env` has `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `MS_REDIRECT_URI`.
 - [ ] Settings → Connect Outlook → mailbox shows **connected**, correct address, folders discovered.

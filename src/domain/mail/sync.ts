@@ -145,7 +145,12 @@ export async function ingestMessage(svc: Services, mailbox: Mailbox, folderRole:
 
   if (outbound) {
     // Our own app message (immutable ID of the draft or internet message id)?
-    const [ours] = await db.select().from(s.messages).where(and(eq(s.messages.mailboxId, mailbox.id), eq(s.messages.direction, "outbound"), sql`(${s.messages.providerDraftId} = ${m.providerMessageId} OR (${s.messages.internetMessageId} IS NOT NULL AND ${s.messages.internetMessageId} = ${m.internetMessageId}))`));
+    let [ours] = await db.select().from(s.messages).where(and(eq(s.messages.mailboxId, mailbox.id), eq(s.messages.direction, "outbound"), sql`(${s.messages.providerDraftId} = ${m.providerMessageId} OR ${s.messages.providerMessageId} = ${m.providerMessageId} OR (${s.messages.internetMessageId} IS NOT NULL AND ${s.messages.internetMessageId} = ${m.internetMessageId}))`));
+    // Providers where sending creates a new message id (Gmail): match our just-submitted message in the same thread.
+    if (!ours && m.conversationId) {
+      const pending = await db.select().from(s.messages).where(and(eq(s.messages.mailboxId, mailbox.id), eq(s.messages.direction, "outbound"), eq(s.messages.providerConversationId, m.conversationId), sql`${s.messages.providerMessageId} IS NULL`, inArray(s.messages.status, ["dispatching", "submitted", "uncertain"])));
+      if (pending.length === 1) ours = pending[0];
+    }
     if (ours) {
       await db.update(s.messages).set({ providerMessageId: m.providerMessageId, providerFolderId: m.folderId, providerConversationId: m.conversationId ?? ours.providerConversationId, recordedSentAt: ours.recordedSentAt ?? m.sentAt, webLink: m.webLink ?? ours.webLink }).where(eq(s.messages.id, ours.id));
       // A sync observation also reconciles submitted/uncertain sends.

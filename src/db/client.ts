@@ -22,7 +22,7 @@ export function getDb(): Db {
   if (!url) throw new Error("DATABASE_URL is not set. See .env.example.");
   const pool = new pg.Pool({
     connectionString: url,
-    max: Number(process.env.DATABASE_POOL_MAX ?? 5),
+    max: Number(process.env.DATABASE_POOL_MAX) || 5,
     ssl: process.env.DATABASE_SSL === "require" ? { rejectUnauthorized: true } : undefined,
   });
   pool.on("error", (err) => console.error("[db] idle client error:", err.message));

@@ -27,7 +27,7 @@ export function geocoderConfig() {
     provider: process.env.GEOCODER ?? "none",
     url: process.env.GEOCODER_URL ?? "https://nominatim.openstreetmap.org/search",
     userAgent: process.env.GEOCODER_USER_AGENT ?? "InternshipOutreachManager/0.1 (self-hosted)",
-    minIntervalMs: Number(process.env.GEOCODER_MIN_INTERVAL_MS ?? 1100),
+    minIntervalMs: Number(process.env.GEOCODER_MIN_INTERVAL_MS) || 1100,
   };
 }
 

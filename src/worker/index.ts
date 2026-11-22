@@ -19,8 +19,9 @@ import { geocodePending, geocoderConfig } from "@/domain/geo/geocode";
 import { runDiscoveryStep } from "@/domain/discovery/service";
 import { errorSummary } from "@/lib/redact";
 
-const TICK_MS = Number(process.env.WORKER_TICK_MS ?? 5000);
-const POLL_MINUTES = Number(process.env.SYNC_POLL_MINUTES ?? (webhooksEnabled() ? 30 : 5));
+// Empty values in .env (e.g. "SYNC_POLL_MINUTES=") mean "use the default", never 0.
+const TICK_MS = Number(process.env.WORKER_TICK_MS) || 5000;
+const POLL_MINUTES = Number(process.env.SYNC_POLL_MINUTES) || (webhooksEnabled() ? 30 : 5);
 let stopping = false;
 
 async function main() {

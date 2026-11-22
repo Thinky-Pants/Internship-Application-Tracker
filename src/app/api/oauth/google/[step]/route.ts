@@ -18,7 +18,11 @@ import { enqueueJob } from "@/domain/jobs";
 
 const COOKIE = "iom_oauth_google";
 const redirectTo = (path: string, req: Request) => Response.redirect(new URL(path, process.env.APP_BASE_URL ?? req.url), 302);
-const fail = (req: Request, msg: string) => redirectTo("/settings?err=" + encodeURIComponent(msg) + "#mailboxes", req);
+const fail = (req: Request, msg: string) => {
+  // Logged (already redacted, no codes/tokens) so connection problems are diagnosable from `docker compose logs web`.
+  console.warn(`[oauth:google] connection failed: ${msg}`);
+  return redirectTo("/settings?err=" + encodeURIComponent(msg) + "#mailboxes", req);
+};
 
 export const GET = handler(async (req: Request, ctx: { params: Promise<{ step: string }> }) => {
   const owner = await apiOwner();
@@ -59,6 +63,7 @@ export const GET = handler(async (req: Request, ctx: { params: Promise<{ step: s
     } else mailboxId = (await svc.db.insert(s.mailboxes).values(vals).returning())[0].id;
     await ensureFolders(svc, mailboxId);
     await enqueueJob(svc.db, { ownerId: owner.id, kind: "mailbox_sync", payload: { mailboxId }, dedupeKey: `sync:${mailboxId}:pending` });
+    console.log("[oauth:google] mailbox connected");
     return redirectTo(`/settings?msg=${encodeURIComponent(`Connected ${id.emailAddress}. The first sync covers Inbox and Sent from the last 90 days.`)}#mailboxes`, req);
   } catch (e) {
     return fail(req, `Could not complete the Gmail connection: ${errorSummary(e)}`);
